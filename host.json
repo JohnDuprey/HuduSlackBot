@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "managedDependency": {
+    "Enabled": false
+  },
+  "functionTimeout": "00:05:00",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[2.*, 3.0.0)"
+  },
+  "extensions": {
+    "durableTask": {
+      "maxConcurrentActivityFunctions": 2,
+      "maxConcurrentOrchestratorFunctions": 1
+    }
+  }
+}

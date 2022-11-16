@@ -1,9 +1,8 @@
 function Receive-SlackInteraction {
     param( $QueueItem, $TriggerMetadata)
-    
+
     Invoke-ProcessSlackInteraction -Request $QueueItem
 }
-
 function Receive-SlackEvent {
     param( $QueueItem, $TriggerMetadata)
 

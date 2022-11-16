@@ -1,19 +1,10 @@
-function Invoke-SlackHttpTrigger {
-    param($Request, $TriggerMetadata)
-    
-    Push-OutputBinding -Name response -Value ([HttpResponseContext]@{
-            StatusCode = [System.Net.HttpStatusCode]::OK
-            Body       = (Get-ChildItem env: | ConvertTo-Json)
-        })
-}
-
 function Send-SlackInteraction {
     param($Request, $TriggerMetadata)
     
     # Send HTTP 200 OK and send interaction to queue for processing
     Push-OutputBinding -Name response -Value ([HttpResponseContext]@{
             StatusCode = [System.Net.HttpStatusCode]::OK
-            Body       = (Get-ChildItem env: | ConvertTo-Json)
+            Body       = 'OK'
         })
     Push-OutputBinding -Name Interaction -value $Request
 }
@@ -39,4 +30,4 @@ function Send-SlackEvent {
     }
 }
 
-Export-ModuleMember -Function @('Invoke-SlackHttpTrigger', 'Send-SlackInteraction', 'Send-SlackEvent')
+Export-ModuleMember -Function @('Send-SlackInteraction', 'Send-SlackEvent')

@@ -1,10 +1,15 @@
 function Invoke-ProcessSlackInteraction {
     Param($Request)
 
+    Set-PSSlackConfig -Token $env:SlackBotToken -NoSave
+    #$Request | ConvertTo-Json -Depth 10
+    
     # Parse Interaction request
     $RequestData = ConvertFrom-StringData -StringData $Request.Body
     $PayloadJson = [System.Web.HttpUtility]::UrlDecode($RequestData.payload)
     $Interaction = $PayloadJson | ConvertFrom-Json
+
+    #$Interaction | ConvertTo-Json -Depth 10
 
     # Query for existing event and cancel if already processed
     $EventQuery = @{
@@ -23,7 +28,17 @@ function Invoke-ProcessSlackInteraction {
 
     switch ($Interaction.type) {
         'block_actions' {
-
+            foreach ($Action in $Interaction.actions) {
+                switch ($Action.action_id) {
+                    'Open-NewHuduSubscriptionModal' {
+                        Open-NewHuduSubscriptionModal
+                    }
+                    'Remove-HuduActivitySubscription' {
+                        Remove-HuduActivitySubscription -RowKey $Action.selected_option.value
+                        Update-SlackAppHome -UserId $Interaction.user.id
+                    }
+                }
+            }
         }
     }
 

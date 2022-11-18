@@ -1,6 +1,5 @@
 ﻿#Borrowed from https://github.com/jgigler/Powershell.Slack - thanks @jgigler et al!
-function New-SlackMessageBlock
-{
+function New-SlackMessageBlock {
     <#
     .SYNOPSIS
         Creates a rich notification (Block) to use in a Slack message.
@@ -90,7 +89,7 @@ function New-SlackMessageBlock
         [object[]]
         $ExistingBlock,
         
-        [validateset('actions','context','divider','file','header','image','section')] # Since 'Input' type is only for modals and not message, it's not allowed here
+        [validateset('actions', 'context', 'divider', 'file', 'header', 'image', 'section')] # Since 'Input' type is only for modals and not message, it's not allowed here
         [string]$Type,
         
         [string]$BlockId
@@ -99,22 +98,22 @@ function New-SlackMessageBlock
 
     dynamicparam {
         $params = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-        switch($Type) {
-            "image"  {
+        switch ($Type) {
+            'image' {
                 New-DynamicParam -Name ImageUrl -Type string -Mandatory -DPDictionary $params -Position 1
                 New-DynamicParam -Name AltText -Type string -Mandatory -DPDictionary $params -Position 2
                 New-DynamicParam -Name Title -Type string -DPDictionary $params -Position 3
             }
-            "context"  {
+            'context' {
                 New-DynamicParam -Name Elements -Type System.Collections.Hashtable[] -Mandatory -DPDictionary $params
             }
-            "actions"  {
+            'actions' {
                 New-DynamicParam -Name Elements -Type System.Collections.Hashtable[] -Mandatory -DPDictionary $params
             }
-            "header"  {
-                New-DynamicParam -Name Text -Type string -DPDictionary $params
+            'header' {
+                New-DynamicParam -Name PlainText -Type string -DPDictionary $params
             }
-            "section"  {
+            'section' {
                 New-DynamicParam -Name Fields -Type string[] -DPDictionary $params
                 New-DynamicParam -Name Accessory -Type System.Collections.Hashtable -DPDictionary $params
                 New-DynamicParam -Name Text -Type string -DPDictionary $params
@@ -123,45 +122,41 @@ function New-SlackMessageBlock
         return $params
     }
 
-    Begin
-    {
+    Begin {
         $Block = @{}
-        switch($PSBoundParameters.Keys)
-        {
-            'Elements' { $Block.elements = $PSBoundParameters["Elements"] } #Elements are defined by the user as an Array of HashTables.
-            'Accessory' { $Block.accessory = $PSBoundParameters["Accessory"] }
-            'Type' { $Block.type = $Type}
+        switch ($PSBoundParameters.Keys) {
+            'Elements' { $Block.elements = $PSBoundParameters['Elements'] } #Elements are defined by the user as an Array of HashTables.
+            'Accessory' { $Block.accessory = $PSBoundParameters['Accessory'] }
+            'Type' { $Block.type = $Type }
             'BlockId' { $Block.block_id = $BlockId }
-            'AltText' { $Block.alt_text = $PSBoundParameters["AltText"] }
-            'Text' { $Block.text = @{ type = "plain_text" ; text = $PSBoundParameters["Text"] } }
-            'Title' { $Block.title = @{ type = "plain_text" ; text = $PSBoundParameters["Title"] } }
+            'AltText' { $Block.alt_text = $PSBoundParameters['AltText'] }
+            'PlainText' { $Block.text = @{ type = 'plain_text' ; text = $PSBoundParameters['PlainText'] } }
+            'Text' { $Block.text = @{ type = 'mrkdwn' ; text = $PSBoundParameters['Text'] } }
+            'Title' { $Block.title = @{ type = 'plain_text' ; text = $PSBoundParameters['Title'] } }
             'Fields' {
-                $Fields = $PSBoundParameters["Fields"]
+                $Fields = $PSBoundParameters['Fields']
                 $LstFields = @()
                 $Fields | ForEach-Object {
-                    $LstFields += @{ type = "mrkdwn" ; text = $_ }
+                    $LstFields += @{ type = 'mrkdwn' ; text = $_ }
                 }
                 $Block.fields = $LstFields
             }
         }
 
-        if($Block.elements -and $Block.elements.Count -gt 10){
-            throw "Max Element Count for a block is 10"
+        if ($Block.elements -and $Block.elements.Count -gt 10) {
+            throw 'Max Element Count for a block is 10'
         }
 
         Add-ObjectDetail -InputObject $Block -TypeName 'PSSlack.MessageBlock' -Passthru $False
         $ReturnObject = @()
     }
-    Process
-    {
-        foreach($a in $ExistingBlock)
-        {
+    Process {
+        foreach ($a in $ExistingBlock) {
             $ReturnObject += $a
         }
         
-        If($ExistingBlock)
-        {
-            Write-Verbose "Existing Block: $($ExistingBlock | Convertto-Json -compress)"
+        If ($ExistingBlock) {
+            Write-Verbose "Existing Block: $($ExistingBlock | ConvertTo-Json -Compress)"
         }
     }
     End {

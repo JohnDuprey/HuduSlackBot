@@ -1,7 +1,7 @@
 function Get-SlackBotTable {
     [CmdletBinding()]
     param (
-        $TableName = 'Logs'
+        $TableName
     )
     @{
         ConnectionString       = $env:AzureWebJobsStorage

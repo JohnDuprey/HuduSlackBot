@@ -10,14 +10,16 @@ function Start-SubscriptionsOrchestrator {
         $RetryOptions = New-DurableRetryOptions @DurableRetryOptions
         $Subscriptions = Invoke-ActivityFunction -FunctionName 'Get-SubscriptionsQueue'
 
-        $Tasks = foreach ($Subscription in $Subscriptions) {
-            Invoke-DurableActivity -FunctionName 'Invoke-DurableProcessSubscription' -Input $Subscription -NoWait -RetryOptions $RetryOptions
+        if (($Subscriptions | Measure-Object).Count -gt 0) {
+            $Tasks = foreach ($Subscription in $Subscriptions) {
+                Invoke-DurableActivity -FunctionName 'Invoke-DurableProcessSubscription' -Input $Subscription -NoWait -RetryOptions $RetryOptions
+            }
+            Wait-ActivityFunction -Task $Tasks
         }
-        Wait-ActivityFunction -Task $Tasks
-        Write-Host "Completed."
+        Write-Host 'Completed.'
     }
     catch {
-        Write-Error "Exception processing subscriptions $($_.Exception.Message)"
+        Write-Host "EXCEPTION processing subscriptions $($_.Exception.Message)"
     }
 }
 

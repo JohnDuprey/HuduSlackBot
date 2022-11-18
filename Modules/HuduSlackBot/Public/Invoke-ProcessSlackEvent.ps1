@@ -15,8 +15,6 @@ function Invoke-ProcessSlackEvent {
         return $false
     }
 
-    # Initialize Slack config
-    Import-Module PSSlack
     Set-PSSlackConfig -Token $env:SlackBotToken -NoSave
     
     # Process event
@@ -27,7 +25,9 @@ function Invoke-ProcessSlackEvent {
         }
 
         'app_home_opened' {
-            Get-SlackAppHome -SlackEvent $SlackEvent
+            if ($SlackEvent.event.tab -eq 'home') {
+                Update-SlackAppHome -UserID $SlackEvent.event.user
+            }
         }
     }
 

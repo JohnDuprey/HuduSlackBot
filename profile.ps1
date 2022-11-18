@@ -12,4 +12,11 @@
 # Authenticate with Azure PowerShell using MSI.
 # Remove this if you are not planning on using MSI or Azure PowerShell.
 
-Import-Module HuduSlackBot
+try {
+    Import-Module HuduSlackBot
+    Import-Module AzBobbyTables
+    Import-Module PSSlack
+}
+catch {
+    Write-Host "ERROR loading module: $($_.Exception.Message)"
+}

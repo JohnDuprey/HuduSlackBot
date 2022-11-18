@@ -1,7 +1,11 @@
 function Get-SubscriptionsQueue {
     Param($Name)
-
-    Get-HuduSubscriptions
+    try {
+        Get-HuduSubscriptions
+    }
+    catch {
+        Write-Host "Error getting subscriptions: $($_.Exception.Message)"
+    }
 }
 
 function Invoke-DurableProcessSubscription {

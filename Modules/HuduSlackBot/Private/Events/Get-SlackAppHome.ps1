@@ -8,20 +8,28 @@ function Get-SlackAppHome {
 
     # Get Hudu info
     try {
-        Initialize-HuduApi
-        $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
+        $ApiInit = Initialize-HuduApi
+        if ($ApiInit) {
+            $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
+        }
+        else {
+            $Info = $false
+        }
     }
     catch {
     
     }
+
     $Subscriptions = Get-SlackBotData @SubQuery
 
-    $HuduLinkElement = @{
-        Type     = 'button'
-        ActionId = 'OpenHudu'
-        Text     = ':link: Open Hudu'
-        Url      = $env:HuduBaseUrl
-        Value    = 'Open-HuduWebsite'
+    if ($env:HuduBaseDomain) {
+        $HuduLinkElement = @{
+            Type     = 'button'
+            ActionId = 'OpenHudu'
+            Text     = ':link: Open Hudu'
+            Url      = $env:HuduBaseDomain
+            Value    = 'Open-HuduWebsite'
+        }
     }
 
     $AddSubscriptionElement = @{
@@ -31,7 +39,6 @@ function Get-SlackAppHome {
         Style    = 'primary'
         Value    = 'Open'
     }
-
 
     $HeaderBlock = @{
         BlockId   = 'ViewHeader'

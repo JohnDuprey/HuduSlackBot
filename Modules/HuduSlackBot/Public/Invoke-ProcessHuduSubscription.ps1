@@ -56,7 +56,7 @@ function Invoke-ProcessHuduSubscription {
                                 else {
                                     $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
                                     if ($FieldTag.id) {
-                                        $Value = '<{0}{1}|{2}>' -f $env:HuduBaseUrl, $FieldTag.url, $FieldTag.name
+                                        $Value = '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
                                     }
                                     else {
                                         $Value = $Field.value

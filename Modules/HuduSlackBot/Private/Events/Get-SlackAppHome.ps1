@@ -7,9 +7,13 @@ function Get-SlackAppHome {
     }
 
     # Get Hudu info
-    Initialize-HuduApi
-    $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
-
+    try {
+        Initialize-HuduApi
+        $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
+    }
+    catch {
+    
+    }
     $Subscriptions = Get-SlackBotData @SubQuery
 
     $HuduLinkElement = @{
@@ -28,22 +32,13 @@ function Get-SlackAppHome {
         Value    = 'Open'
     }
 
-    $HeaderContextElements = @(
-        @{
-            type = 'mrkdwn'
-            text = ('Server version: {0}' -f $Info.Version)
-        }
-    )
-    $HeaderContextBlock = @{
-        Type     = 'context'
-        Elements = $HeaderContextElements
-    }
+
     $HeaderBlock = @{
         BlockId   = 'ViewHeader'
         Type      = 'header'
         PlainText = 'HuduBot - Slack bot for Hudu'
     }
-    $Blocks = New-SlackMessageBlock @HeaderBlock | New-SlackMessageBlock -Type divider | New-SlackMessageBlock @HeaderContextBlock
+    $Blocks = New-SlackMessageBlock @HeaderBlock
 
     if (!$Info) {
         $ActionButtons = New-SlackMessageBlockElement @HuduLinkElement
@@ -62,6 +57,18 @@ function Get-SlackAppHome {
         $Blocks = $Blocks | New-SlackMessageBlock @WarningBlock
     }
     else {
+        $HeaderContextElements = @(
+            @{
+                type = 'mrkdwn'
+                text = ('Server version: {0}' -f $Info.Version)
+            }
+        )
+        $HeaderContextBlock = @{
+            Type     = 'context'
+            Elements = $HeaderContextElements
+        }
+        $Blocks = $Blocks | New-SlackMessageBlock -Type divider | New-SlackMessageBlock @HeaderContextBlock
+
         $UpdateCheck = Get-HuduServerUpdate -Version $Info.Version
         if (!$UpdateCheck.Current) {
             $WarningBlock = @{

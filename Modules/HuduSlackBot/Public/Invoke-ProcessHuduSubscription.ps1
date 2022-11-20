@@ -68,7 +68,7 @@ function Invoke-ProcessHuduSubscription {
                             "*{0}*`n{1}" -f $Field.Label, $Value
                         }
                     }
-                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} Asset {1}: <{2}|{3}>`n`n*Company*`n{4}" -f $Asset.asset_type, $Action, $Asset.url, $Asset.name, $Asset.company_name ) -Fields $Fields 
+                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} Asset {1}: <{2}|{3}>`n`n*Company*`n<{4}|{5}>" -f $Asset.asset_type, $Action, $Asset.url, $Asset.name, $Log.record_company_url, $Log.company_name ) -Fields $Fields 
 
                     if ($RichTextFields) {
                         foreach ($RichTextField in $RichTextFields) {
@@ -79,7 +79,7 @@ function Invoke-ProcessHuduSubscription {
                 }
                 else {
                     if ($Log.company_name) {
-                        $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.company_url, $Log.company_name
+                        $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.record_company_url, $Log.company_name
                     }
                     else {
                         if ($Log.record_type -eq 'Asset') {

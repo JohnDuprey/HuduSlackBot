@@ -7,17 +7,29 @@ function Get-SlackAppHome {
     }
 
     # Get Hudu info
-    Initialize-HuduApi
-    $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
+    try {
+        $ApiInit = Initialize-HuduApi
+        if ($ApiInit) {
+            $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
+        }
+        else {
+            $Info = $false
+        }
+    }
+    catch {
+    
+    }
 
     $Subscriptions = Get-SlackBotData @SubQuery
 
-    $HuduLinkElement = @{
-        Type     = 'button'
-        ActionId = 'OpenHudu'
-        Text     = ':link: Open Hudu'
-        Url      = $env:HuduBaseUrl
-        Value    = 'Open-HuduWebsite'
+    if ($env:HuduBaseDomain) {
+        $HuduLinkElement = @{
+            Type     = 'button'
+            ActionId = 'OpenHudu'
+            Text     = ':link: Open Hudu'
+            Url      = $env:HuduBaseDomain
+            Value    = 'Open-HuduWebsite'
+        }
     }
 
     $AddSubscriptionElement = @{
@@ -28,22 +40,12 @@ function Get-SlackAppHome {
         Value    = 'Open'
     }
 
-    $HeaderContextElements = @(
-        @{
-            type = 'mrkdwn'
-            text = ('Server version: {0}' -f $Info.Version)
-        }
-    )
-    $HeaderContextBlock = @{
-        Type     = 'context'
-        Elements = $HeaderContextElements
-    }
     $HeaderBlock = @{
         BlockId   = 'ViewHeader'
         Type      = 'header'
         PlainText = 'HuduBot - Slack bot for Hudu'
     }
-    $Blocks = New-SlackMessageBlock @HeaderBlock | New-SlackMessageBlock -Type divider | New-SlackMessageBlock @HeaderContextBlock
+    $Blocks = New-SlackMessageBlock @HeaderBlock
 
     if (!$Info) {
         $ActionButtons = New-SlackMessageBlockElement @HuduLinkElement
@@ -62,6 +64,18 @@ function Get-SlackAppHome {
         $Blocks = $Blocks | New-SlackMessageBlock @WarningBlock
     }
     else {
+        $HeaderContextElements = @(
+            @{
+                type = 'mrkdwn'
+                text = ('Server version: {0}' -f $Info.Version)
+            }
+        )
+        $HeaderContextBlock = @{
+            Type     = 'context'
+            Elements = $HeaderContextElements
+        }
+        $Blocks = $Blocks | New-SlackMessageBlock -Type divider | New-SlackMessageBlock @HeaderContextBlock
+
         $UpdateCheck = Get-HuduServerUpdate -Version $Info.Version
         if (!$UpdateCheck.Current) {
             $WarningBlock = @{

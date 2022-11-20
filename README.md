@@ -3,8 +3,8 @@
 This is an Azure function app created to bridge the gap between [Slack](https://slack.com) and [Hudu](https://hudu.com) to provide additional context in your work chat.
 
 ## Features
-- Link unfurling
 - Activity log subscriptions
+- Link unfurling (pending API change)
 
 ## Requirements
 - Custom Slack app deployed to your team

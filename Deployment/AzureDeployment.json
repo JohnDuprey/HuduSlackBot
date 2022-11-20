@@ -159,7 +159,7 @@
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
                 "siteConfig": {
                     "Use32BitWorkerProcess": false,
-                    "powerShellVersion": "~7",
+                    "powerShellVersion": "~7.2",
                     "appSettings": [
                         {
                             "name": "AzureWebJobsDashboard",
@@ -183,7 +183,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
+                            "value": "~4"
                         },
                         {
                             "name": "HuduAPIKey",

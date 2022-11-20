@@ -22,7 +22,8 @@ function Invoke-ProcessSlackEvent {
     $SlackEvent = $Request.Body
     switch ($SlackEvent.event.type) {
         'link_shared' {
-            Get-SlackLinkUnfurl -SlackEvent $SlackEvent
+            # Waiting for API to look up URL/slugs
+            #Get-SlackLinkUnfurl -SlackEvent $SlackEvent
         }
         'app_home_opened' {
             if ($SlackEvent.event.tab -eq 'home') {

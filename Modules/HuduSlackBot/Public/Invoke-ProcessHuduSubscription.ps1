@@ -68,7 +68,7 @@ function Invoke-ProcessHuduSubscription {
                             "*{0}*`n{1}" -f $Field.Label, $Value
                         }
                     }
-                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} Asset {1}: <{2}|{3}>" -f $Asset.asset_type, $Action, $Asset.url, $Asset.name ) -Fields $Fields 
+                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} Asset {1}: <{2}|{3}>`n`n*Company*`n{4}" -f $Asset.asset_type, $Action, $Asset.url, $Asset.name, $Asset.company_name ) -Fields $Fields 
 
                     if ($RichTextFields) {
                         foreach ($RichTextField in $RichTextFields) {
@@ -78,7 +78,7 @@ function Invoke-ProcessHuduSubscription {
                     $Blocks | ConvertTo-Json
                 }
                 else {
-                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} {1}: <{2}|{3}>" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name )
+                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} {1}: <{2}|{3}>`n`n*Company*`n{4}" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name, $Asset.company_name)
                 }
                 $Timestamp = $Log.created_at | Get-Date -UFormat '%s'
                 $ContextElements = @(

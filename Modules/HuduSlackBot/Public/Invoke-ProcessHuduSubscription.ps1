@@ -133,7 +133,7 @@ function Invoke-ProcessHuduSubscription {
                 if ($Conversation.ok) {
                     $ErrorMessage = @{
                         Channel = $Conversation.channel.id
-                        Text    = ('An error occurred while trying to send activity logs to the channel <#{0}>. If this is a private channel make sure to invite me!' -f $Subscription.ChannelID)
+                        Text    = ('An error occurred while trying to send activity logs to the channel <#{0}>. Make sure I can post to that channel by inviting me!' -f $Subscription.ChannelID)
                     }
                     Send-SlackMessage @ErrorMessage | Out-Null
                 }

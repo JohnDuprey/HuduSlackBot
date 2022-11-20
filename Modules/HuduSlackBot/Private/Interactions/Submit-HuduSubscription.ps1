@@ -8,11 +8,16 @@ function Submit-HuduSubscription {
 
     try { 
         $Channel = Get-SlackChannelInfo -ChannelID $ConversationID -ErrorAction Stop
+        if ($Channel.raw.is_member -eq $false) {
+            $Body = @{channel = $Channel.ID }
+            Send-SlackApi -Method 'conversations.join' -Body $Body
+        }
+
         $Channel | ConvertTo-Json -Depth 10
         
         $TableRow = @{
             RecordType = [string]$ModalValues.RecordTypeSelect.RecordType.selected_option.value
-            Actions = [string]($ModalValues.ActionTypeSelect.ActionType.selected_options.value -join ',')
+            Actions    = [string]($ModalValues.ActionTypeSelect.ActionType.selected_options.value -join ',')
             ChannelID  = [string]$Channel.ID
             CreatedBy  = [string]$Interaction.user.id
         }
@@ -24,7 +29,7 @@ function Submit-HuduSubscription {
                 $TableRow.AssetLayoutName = "$Name"
             }
             else {
-                $TableRow.AssetLayoutId = "0"
+                $TableRow.AssetLayoutId = '0'
                 $TableRow.AssetLayoutName = 'All Asset Layouts'
             }
         }

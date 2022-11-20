@@ -17,7 +17,7 @@ function Get-SlackAppHome {
         }
     }
     catch {
-    
+        Write-Host "ERROR loading Hudu API"
     }
 
     $Subscriptions = Get-SlackBotData @SubQuery

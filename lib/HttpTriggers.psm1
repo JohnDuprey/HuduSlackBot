@@ -1,12 +1,14 @@
 function Send-SlackInteraction {
     param($Request, $TriggerMetadata)
     
-    # Send HTTP 200 OK and send interaction to queue for processing
+    # Send HTTP 200 OK and process interaction
     Push-OutputBinding -Name response -Value ([HttpResponseContext]@{
             StatusCode = [System.Net.HttpStatusCode]::OK
-            Body       = 'OK'
         })
-    Push-OutputBinding -Name Interaction -value $Request
+
+    if (Test-SlackEventSignature -Request $Request) {
+        Invoke-ProcessSlackInteraction -Request $Request
+    }
 }
 
 function Send-SlackEvent {
@@ -23,7 +25,6 @@ function Send-SlackEvent {
         default {
             Push-OutputBinding -Name response -Value ([HttpResponseContext]@{
                     StatusCode = [System.Net.HttpStatusCode]::OK
-                    Body       = 'OK'
                 })
             Push-OutputBinding -Name Event -value $Request
         }

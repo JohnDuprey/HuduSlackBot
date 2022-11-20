@@ -22,7 +22,7 @@ function Get-SlackAppHome {
 
     $AddSubscriptionElement = @{
         Type     = 'button'
-        ActionId = 'Open-NewHuduSubscriptionModal'
+        ActionId = 'Open-HuduSubscriptionModal'
         Text     = ':bell: Add Activity Subscription'
         Style    = 'primary'
         Value    = 'Open'
@@ -62,6 +62,16 @@ function Get-SlackAppHome {
         $Blocks = $Blocks | New-SlackMessageBlock @WarningBlock
     }
     else {
+        $UpdateCheck = Get-HuduServerUpdate -Version $Info.Version
+        if (!$UpdateCheck.Current) {
+            $WarningBlock = @{
+                BlockId = 'WarningBlockId'
+                Type    = 'section'
+                Text    = (':warning: Your Hudu server is not running the latest version. {0}' -f $UpdateCheck.ReleaseLink)
+            }
+            $Blocks = $Blocks | New-SlackMessageBlock @WarningBlock
+        }
+
         $ActionButtons = New-SlackMessageBlockElement @HuduLinkElement | New-SlackMessageBlockElement @AddSubscriptionElement
         $ActionsBlock = @{
             BlockId  = 'ActionsBlockId'
@@ -90,7 +100,7 @@ function Get-SlackAppHome {
                         ("*Channel:*`n <#{0}>" -f $Subscription.ChannelID)
                 )
                
-                if ($Subscription.ResourceType -eq 'Assets') {
+                if ($Subscription.RecordType -eq 'Asset') {
                     $SubFields.Add("*Asset Layout:*`n {0}" -f $Subscription.AssetLayoutName) | Out-Null
                 }
 

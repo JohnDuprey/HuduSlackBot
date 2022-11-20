@@ -1,9 +1,3 @@
-function Receive-SlackInteraction {
-    param( $QueueItem, $TriggerMetadata)
-    if (Test-SlackEventSignature -Request $QueueItem) {
-        Invoke-ProcessSlackInteraction -Request $QueueItem
-    }
-}
 function Receive-SlackEvent {
     param( $QueueItem, $TriggerMetadata)
 
@@ -12,4 +6,4 @@ function Receive-SlackEvent {
     }
 }
 
-Export-ModuleMember -Function @('Receive-SlackInteraction', 'Receive-SlackEvent')
+Export-ModuleMember -Function @('Receive-SlackEvent')

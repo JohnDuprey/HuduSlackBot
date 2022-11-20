@@ -30,20 +30,20 @@ function Invoke-ProcessHuduSubscription {
         $ErrorsDetected = $false
 
         if ($Logs) {
-            $Layout = Get-HuduAssetLayouts -LayoutId $Subscription.AssetLayoutId
-            #Write-Output ($Layout | ConvertTo-Json)
-            #Write-Output ($Logs | ConvertTo-Json)
             foreach ($Log in $Logs) {
                 if ($Subscription.RecordType -eq 'Asset') {
+                    $Layout = Get-HuduAssetLayouts -LayoutId $Log.asset_layout_id
+                    $RichFields = $Layout.fields | Where-Object { $_.field_type -eq 'RichText' }
                     $Asset = Get-HuduAssets -Id $Log.record_id
                     #Write-Output ($Asset | ConvertTo-Json)
-                    if ($Asset.asset_layout_id -ne $Subscription.AssetLayoutId) { continue }
+                    if ($Asset.asset_layout_id -ne $Subscription.AssetLayoutId -and $Subscription.AssetLayoutId -gt 0) { continue }
                     
                     $RichTextFields = [system.collections.generic.list[string]]::new()
+                    #Write-Output ($Asset.fields | ConvertTo-Json)
                     $Fields = foreach ($Field in $Asset.fields) {
-                        if ($Field.value) {
+                        if ($Field.value -and $Field.value -ne '[]') {
                             try { 
-                                if ($Layout.fields | Where-Object { $_.label -contains $Field.label -and $_.field_type -eq 'RichText' }) {
+                                if ($RichFields.label -contains $Field.label) {
                                     $MarkdownOptions = @{
                                         Content           = $Field.value
                                         UnknownTags       = 'Bypass'
@@ -51,6 +51,7 @@ function Invoke-ProcessHuduSubscription {
                                     }
                                     $Markdown = ConvertFrom-HTMLToMarkdown @MarkdownOptions | ConvertTo-SlackLinkMarkdown
                                     $RichTextFields.Add(("*{0}*`n{1}" -f $Field.label, $Markdown)) | Out-Null
+                                    continue
                                 }
                                 else {
                                     $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
@@ -64,7 +65,7 @@ function Invoke-ProcessHuduSubscription {
                             }
                             catch { $Value = $Field.value }
 
-                            "*{0}*:`n{1}" -f $Field.Label, $Value
+                            "*{0}*`n{1}" -f $Field.Label, $Value
                         }
                     }
                     $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} Asset {1}: <{2}|{3}>" -f $Asset.asset_type, $Action, $Asset.url, $Asset.name ) -Fields $Fields 
@@ -88,7 +89,7 @@ function Invoke-ProcessHuduSubscription {
                 )
                 $Blocks = $Blocks | New-SlackMessageBlock -Type context -Elements $ContextElements | New-SlackMessageBlock -Type divider
 
-                Write-Output ($Blocks | ConvertTo-Json -Depth 10)
+                #Write-Output ($Blocks | ConvertTo-Json -Depth 10)
                 $LogMessage = @{
                     Channel = $Subscription.ChannelID
                     Blocks  = $Blocks
@@ -134,7 +135,7 @@ function Invoke-ProcessHuduSubscription {
                         Channel = $Conversation.channel.id
                         Text    = ('An error occurred while trying to send activity logs to the channel <#{0}>. If this is a private channel make sure to invite me!' -f $Subscription.ChannelID)
                     }
-                    Send-SlackMessage @ErrorMessage
+                    Send-SlackMessage @ErrorMessage | Out-Null
                 }
             }
         }

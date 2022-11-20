@@ -82,6 +82,10 @@ function Parse-SlackError {
                 Message = "Slack API rate-limit exceeded."
                 RecommendedAction = "Try again in a few moments."
             }
+
+            expired_trigger_id = @{
+                Message = 'Interaction trigger was not processed within 3 seconds.'
+            }
         }
     }
 

@@ -13,12 +13,6 @@
       "type": "http",
       "direction": "out",
       "name": "Response"
-    },
-    {
-      "type": "queue",
-      "direction": "out",
-      "name": "Interaction",
-      "queueName": "InteractionQueue"
     }
   ]
 }

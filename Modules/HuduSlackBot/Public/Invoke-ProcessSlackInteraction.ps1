@@ -30,13 +30,20 @@ function Invoke-ProcessSlackInteraction {
         'block_actions' {
             foreach ($Action in $Interaction.actions) {
                 switch ($Action.action_id) {
-                    'Open-NewHuduSubscriptionModal' {
-                        Open-NewHuduSubscriptionModal
+                    'Open-HuduSubscriptionModal' {
+                        Open-HuduSubscriptionModal -TriggerId $Interaction.trigger_id
                     }
                     'Remove-HuduActivitySubscription' {
                         Remove-HuduActivitySubscription -RowKey $Action.selected_option.value
                         Update-SlackAppHome -UserId $Interaction.user.id
                     }
+                }
+            }
+        }
+        'view_submission' {
+            switch ($Interaction.view.callback_id) {
+                'Open-HuduSubscriptionModel' {
+                    Submit-HuduSubscription -Interaction $Interaction
                 }
             }
         }

@@ -9,6 +9,7 @@ function Invoke-ProcessSlackEvent {
         PartitionKey = 'events'
         RowKey       = $Request.Body.event_id
     }
+
     $Existing = Get-SlackBotData @EventQuery
     if ($Existing.RowKey -eq $Request.Body.event_id) {
         Write-Host 'Request already exists'
@@ -23,14 +24,18 @@ function Invoke-ProcessSlackEvent {
         'link_shared' {
             Get-SlackLinkUnfurl -SlackEvent $SlackEvent
         }
-
         'app_home_opened' {
             if ($SlackEvent.event.tab -eq 'home') {
-                Update-SlackAppHome -UserID $SlackEvent.event.user
+                $UpdateAppHome = Update-SlackAppHome -UserID $SlackEvent.event.user
+                if ($UpdateAppHome.ok) {
+                    Write-Host "Updated app home for $($SlackEvent.event.user)"
+                }
+                else {
+                    Write-Host "ERROR: Unable to update app home for $($SlackEvent.event.user)"
+                }
             }
         }
     }
-
 
     # Save event data to prevent duplicates
     $TableRow = @{

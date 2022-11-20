@@ -1,0 +1,11 @@
+{
+  "scriptFile": "../lib/ActivityTriggers.psm1",
+  "entryPoint": "Invoke-DurableProcessSubscription",
+  "bindings": [
+    {
+      "name": "Subscription",
+      "type": "activityTrigger",
+      "direction": "in"
+    }
+  ]
+}

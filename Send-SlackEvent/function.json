@@ -1,0 +1,24 @@
+{
+  "scriptFile": "../lib/HttpTriggers.psm1",
+  "entryPoint": "Send-SlackEvent",
+  "bindings": [
+    {
+      "authLevel": "function",
+      "name": "Request",
+      "type": "httpTrigger",
+      "direction": "in",
+      "methods": ["post", "get"]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "Response"
+    },
+    {
+      "type": "queue",
+      "direction": "out",
+      "name": "Event",
+      "queueName": "EventQueue"
+    }
+  ]
+}

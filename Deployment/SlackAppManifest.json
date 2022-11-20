@@ -1,0 +1,46 @@
+{
+  "display_information": {
+    "name": "Hudu"
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": true,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": true
+    },
+    "bot_user": {
+      "display_name": "HuduBot",
+      "always_online": true
+    },
+    "unfurl_domains": ["your.hudu.server"]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "links:read",
+        "channels:read",
+        "groups:read",
+        "chat:write",
+        "links:write",
+        "users:read.email",
+        "users:read",
+        "groups:write",
+        "mpim:write",
+        "mpim:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://your-function-app/api/Send-SlackEvent?code=FunctionKey",
+      "bot_events": ["app_home_opened", "link_shared"]
+    },
+    "interactivity": {
+      "is_enabled": true,
+      "request_url": "https://your-function-app/api/Send-SlackInteraction?code=FunctionKey"
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

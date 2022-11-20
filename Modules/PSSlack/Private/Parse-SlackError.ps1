@@ -98,7 +98,7 @@ function Parse-SlackError {
 
         $ErrorParams = $SlackErrorData[$ResponseObject.error]
 
-        If ($ErrorParams -eq $null) {
+        If ($null -eq $ErrorParams) {
             $ErrorParams = @{
                 Message = "Unknown error $($ResponseObject.error) received from Slack API."
             }

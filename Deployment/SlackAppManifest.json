@@ -26,7 +26,8 @@
         "users:read",
         "groups:write",
         "mpim:write",
-        "mpim:read"
+        "mpim:read",
+        "channels:join"
       ]
     }
   },

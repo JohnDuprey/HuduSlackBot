@@ -134,7 +134,6 @@ function Open-HuduSubscriptionModal {
                     )
                 }
                 max_selected_items = 1
-                
             }
         }
     
@@ -156,24 +155,16 @@ function Open-HuduSubscriptionModal {
             text = 'Cancel'
         }
         blocks      = $Blocks
-    } | ConvertTo-Json -Depth 10 -Compress
+    } | ConvertTo-Json -Depth 20 -Compress
 
-    Write-Host $View
-    $Body = @{
+    $Body = [PSCustomObject]@{
         trigger_id = $TriggerId
         view       = $View
-    }
+    } | ConvertTo-Json -Depth 10 -Compress
 
-    Write-Host ($Body | ConvertTo-Json)
+    #Write-Host ($Body | ConvertTo-Json)
     try {
-        $OpenModal = Send-SlackApi -Method 'views.open' -Body $Body
-        if ($OpenModal.ok) {
-            Write-Host 'Opened subscription modal'
-        }
-        else {
-            Write-Host "Unable to open modal"
-            $OpenModal
-        }
+        Send-SlackApi -Method 'views.open' -Body $Body -AsJson
     }
     catch {
         Write-Host "MODAL ERROR: $($_.Exception.Message)"

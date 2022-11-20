@@ -42,7 +42,7 @@ function Send-SlackApi
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [hashtable]$Body = @{ },
+        $Body = @{ },
 
         [ValidateNotNullOrEmpty()]
         [ValidateScript({
@@ -58,13 +58,25 @@ function Send-SlackApi
         [string]$Token = $Script:PSSlack.Token,
 
         [string]$Proxy = $Script:PSSlack.Proxy,
+        [switch]$AsJson,
 
         [switch]$ForceVerbose = $Script:PSSlack.ForceVerbose
     )
+    $Headers = @{Authorization = 'Bearer ' + $Token }
+
+    if ($AsJson) { 
+        $Headers.'Content-Type' = 'application/json' 
+        $RequestMethod = "Post"
+    }
+    else {
+        $RequestMethod = "Get"
+    }
+
     $Params = @{
         Uri = "https://slack.com/api/$Method"
         ErrorAction = 'Stop'
-        Headers = @{Authorization="Bearer "+$Token;}
+        Headers = $Headers
+        Method = $RequestMethod
     }
     if($Proxy) {
         $Params['Proxy'] = $Proxy
@@ -99,7 +111,7 @@ function Send-SlackApi
             Send-SlackApi @PSBoundParameters
 
         }
-        elseif ($_.ErrorDetails.Message -ne $null) {
+        elseif ($null -ne $_.ErrorDetails.Message) {
             # Convert the error-message to an object. (Invoke-RestMethod will not return data by-default if a 4xx/5xx status code is generated.)
             $_.ErrorDetails.Message | ConvertFrom-Json | Parse-SlackError -Exception $_.Exception -ErrorAction Stop
 
@@ -111,7 +123,7 @@ function Send-SlackApi
 
     # Check to see if we have confirmation that our API call failed.
     # (Responses with exception-generating status codes are handled in the "catch" block above - this one is for errors that don't generate exceptions)
-    if ($Response -ne $null -and $Response.ok -eq $False) {
+    if ($null -ne $Response -and $Response.ok -eq $False) {
         $Response | Parse-SlackError
     }
     elseif($Response) {

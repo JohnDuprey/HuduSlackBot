@@ -14,7 +14,8 @@ This is an Azure function app created to bridge the gap between [Slack](https://
 ## Installation
 1. Generate a Hudu API key https://yourhuduserver/admin/api_keys
 2. Deploy the [Slack App](https://api.slack.com/apps) using the App Manifest in the Deployment folder (make sure to update the parameters to match your environment)
-3. Deploy the Azure Function App to your environment
+3. Deploy the Azure Function App to your environment 
+    - [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjduprey%2FHuduSlackBot%2Fmain%2FDeployment%2FAzureDeployment.json)
 4. Fill in the details of the deployment template with the appropriate API keys.
 5. Generate function keys for each HTTP trigger, Send-SlackInteraction and Send-SlackEvent, update your Slack App configuration accordingly.
 5. Invite @HuduBot to any private channels you would like it to function in.

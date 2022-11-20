@@ -78,7 +78,16 @@ function Invoke-ProcessHuduSubscription {
                     $Blocks | ConvertTo-Json
                 }
                 else {
-                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} {1}: <{2}|{3}>`n`n*Company*`n{4}" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name, $Asset.company_name)
+                    if ($Log.company_name) {
+                        $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.company_url, $Log.company_name
+                    }
+                    else {
+                        if ($Log.record_type -eq 'Asset') {
+                            $Company = "`n`n*Global KB*"
+                        }
+                    }
+
+                    $Blocks = New-SlackMessageBlock -Type section -Text ( "*Activity Log Subscription*`n{0} {1}: <{2}|{3}> {4}" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name, $Company)
                 }
                 $Timestamp = $Log.created_at | Get-Date -UFormat '%s'
                 $ContextElements = @(

@@ -24,7 +24,7 @@ function Invoke-ProcessHuduSubscription {
 
         Write-Output "Searching logs for $Actions $($Subscription.RecordType)"
         $Logs = foreach ($Action in $Actions) {
-            $ActivityLogs | Where-Object { $_.record_type -eq $Subscription.RecordType -and ($Action -eq 'all' -or $Action -eq $_.action) -and (!$Subscription.LastActivityId -or $Log.id -gt $Subscription.LastActivityId) } 
+            $ActivityLogs | Where-Object { $_.record_type -eq $Subscription.RecordType -and $Action -eq $_.action -and ($null -eq $Subscription.LastActivityId -or $_.id -gt $Subscription.LastActivityId) } 
         }
     
         $ErrorsDetected = $false

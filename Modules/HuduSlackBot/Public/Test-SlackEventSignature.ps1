@@ -18,7 +18,7 @@ function Test-SlackEventSignature {
     $TimestampDifference = [Math]::abs(($CurrentTimestamp - $RequestTimestamp))
 
     if ($TimestampDifference -gt 300) {
-        Write-Error "Event occurred more than 5 minutes ago, ($TimeStampDifference s) verification failed."
+        Write-Host "ERROR: Event occurred more than 5 minutes ago, ($TimeStampDifference s) verification failed."
         return $false
     }
 
@@ -33,9 +33,7 @@ function Test-SlackEventSignature {
         return $true
     }
     else {
-        Write-Host $Signature
-        Write-Host $Headers.'x-slack-signature'
-        Write-Error 'Signature does not match, verification failed'
+        Write-Host 'ERROR: Signature does not match, verification failed'
         return $false
     }
 }

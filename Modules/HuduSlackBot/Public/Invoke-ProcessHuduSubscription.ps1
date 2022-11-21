@@ -34,6 +34,7 @@ function Invoke-ProcessHuduSubscription {
                 if ($Subscription.RecordType -eq 'Asset') {
                     $Layout = Get-HuduAssetLayouts -LayoutId $Log.asset_layout_id
                     $RichFields = $Layout.fields | Where-Object { $_.field_type -eq 'RichText' }
+                    $DateFields = $Layout.fields | Where-Object { $_.field_type -eq 'Date' }
                     $Asset = Get-HuduAssets -Id $Log.record_id
                     #Write-Output ($Asset | ConvertTo-Json)
                     if ($Asset.asset_layout_id -ne $Subscription.AssetLayoutId -and $Subscription.AssetLayoutId -gt 0) { continue }
@@ -53,7 +54,10 @@ function Invoke-ProcessHuduSubscription {
                                     $RichTextFields.Add(("*{0}*`n{1}" -f $Field.label, $Markdown)) | Out-Null
                                     continue
                                 }
-                                else {
+                                elseif ($DateFields.label -contains $Field.label) {
+                                    $Value = $Field.value | Get-Date -UFormat '%F'
+                                }
+                                else {  
                                     $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
                                     if ($FieldTag.id) {
                                         $Value = '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
@@ -75,7 +79,7 @@ function Invoke-ProcessHuduSubscription {
                             $Blocks = $Blocks | New-SlackMessageBlock -Type section -Text $RichTextField
                         }
                     }
-                    $Blocks | ConvertTo-Json
+                    #$Blocks | ConvertTo-Json
                 }
                 else {
                     if ($Log.company_name) {

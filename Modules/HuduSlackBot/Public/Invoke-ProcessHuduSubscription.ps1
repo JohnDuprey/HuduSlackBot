@@ -86,7 +86,7 @@ function Invoke-ProcessHuduSubscription {
                         $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.record_company_url, $Log.company_name
                     }
                     else {
-                        if ($Log.record_type -eq 'Asset') {
+                        if ($Log.record_type -eq 'Article') {
                             $Company = "`n`n*Global KB*"
                         }
                     }

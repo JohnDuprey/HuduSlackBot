@@ -3,36 +3,84 @@ function Get-SlackLinkUnfurl {
         $SlackEvent
     )
 
-    $Links = $Event.event.links.url
-    
-    return $false
+    # Get Hudu info
+    try {
+        Initialize-HuduApi
+    }
+    catch {
+        Write-Host 'ERROR loading Hudu API'
+    }
 
+    $Links = $SlackEvent.event.links.url
+    $BaseUrl = Get-HuduBaseURL
 
-    $Unfurls = foreach ($Link in $Links) {
-        $Resource = Get-HuduResourceByUrl -Url $Link
-        switch ($Resource.object_type) {
-            'Article' { $Company = (Get-HuduCompanies -Id $Resource.company_id).name }
-            'Asset' { $Company = $Resource.company_name }
-            'Company' { $Company = $Resource.name }
-            'Website' { $Company = $Resource.company_name}
+    $Unfurls = @{}
+    foreach ($Link in $Links) {
+        try { 
+            $Object = Get-HuduObjectByUrl -Url $Link
+
+            $Timestamp = Get-Date $Object.updated_at -UFormat '%s'
+            $DateTime = Get-Date $Object.updated_at -UFormat '%F'
+
+            $ContextElements = [system.collections.generic.list[hashtable]]@(
+                @{
+                    type = 'mrkdwn'
+                    text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
+                    
+                }
+            )
+
+            switch ($Object.object_type) {
+                'Article' { 
+                    if ($Object.company_id) {
+                        $Company = (Get-HuduCompanies -Id $Object.company_id).name 
+                    }
+                    else {
+                        $Company = 'Global KB'
+                    }
+
+                    $ContextElements.Add(
+                        @{
+                            type = 'mrkdwn'
+                            text = $Company
+                        }
+                    ) | Out-Null
+                }
+                'Company' { 
+                    $Company = $Object.name 
+                }
+                default { 
+                    $Company = $Object.company_name
+                    $ContextElements.Add(
+                        @{
+                            type = 'mrkdwn'
+                            text = $Company
+                        }
+                    ) | Out-Null
+                }
+            }
+       
+            $ContextBlock = @{
+                Type     = 'context'
+                Elements = $ContextElements
+            }
+
+            $Unfurls.$Link = @{
+                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | *{1}*' -f $Object.object_type, $Object.name ) | New-SlackMessageBlock @ContextBlock
+            }
+        }
+        catch {
+            Write-Host "Exception creating unfurl: $($_.Exception.Message)"
         }
     }
-    if ($Company.name) {
-        $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.record_company_url, $Log.company_name
-    }
-    else {
-        if ($Log.record_type -eq 'Asset') {
-            $Company = "`n`n*Global KB*"
-        }
-    }
-
-    $Blocks = New-SlackMessageBlock -Type section -Text ( "{0} {1}: <{2}|{3}> {4}" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name, $Company)
 
     $Body = [PSCustomObject]@{
-        source    = $Event.event.source
-        unfurl_id = $Event.event.unfurl_id
+        source    = $SlackEvent.event.source
+        unfurl_id = $SlackEvent.event.unfurl_id
         unfurls   = $Unfurls
     } | ConvertTo-Json -Depth 10 -Compress
+
+    Write-Host $Body
 
     Send-SlackApi -Method 'chat.unfurl' -Body $Body -AsJson
 }

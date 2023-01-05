@@ -1,5 +1,14 @@
 
 ## Release Notes
+### Version 2.3.0
+```
+Added new integration matching endpoints (Thank you @johnduprey)
+```
+### Version 2.2.1
+```
+Added company types to companies (Thank you @greenlighttec)
+Added resource filter to get-huduassets (Thank you @johnduprey)
+```
 ### Version 2.2.0
 ```
 Added Get-HuduExpirations (Thank you @AdamWillford)

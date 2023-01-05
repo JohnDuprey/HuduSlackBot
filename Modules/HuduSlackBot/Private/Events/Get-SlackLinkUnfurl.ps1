@@ -18,6 +18,18 @@ function Get-SlackLinkUnfurl {
     foreach ($Link in $Links) {
         try { 
             $Object = Get-HuduObjectByUrl -Url $Link
+
+            $Timestamp = Get-Date $Object.updated_at -UFormat '%s'
+            $DateTime = Get-Date $Object.updated_at -UFormat '%F'
+
+            $ContextElements = [system.collections.generic.list[hashtable]]@(
+                @{
+                    type = 'mrkdwn'
+                    text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
+                    
+                }
+            )
+
             switch ($Object.object_type) {
                 'Article' { 
                     if ($Object.company_id) {
@@ -26,12 +38,25 @@ function Get-SlackLinkUnfurl {
                     else {
                         $Company = 'Global KB'
                     }
+
+                    $ContextElements.Add(
+                        @{
+                            type = 'mrkdwn'
+                            text = $Company
+                        }
+                    ) | Out-Null
                 }
                 'Company' { 
                     $Company = $Object.name 
                 }
                 default { 
                     $Company = $Object.company_name
+                    $ContextElements.Add(
+                        @{
+                            type = 'mrkdwn'
+                            text = $Company
+                        }
+                    ) | Out-Null
                 }
             }
             if ($Object.url -notmatch $BaseUrl) {
@@ -40,27 +65,14 @@ function Get-SlackLinkUnfurl {
             else {
                 $Url = $object.url
             }
-
-            $Timestamp = Get-Date $Object.updated_at -UFormat '%s'
-            $DateTime = Get-Date $Object.updated_at -UFormat '%F'
-
-            $ContextElements = @(
-                @{
-                    type = 'mrkdwn'
-                    text = $Company
-                }
-                @{
-                    type = 'mrkdwn'
-                    text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
-                }
-            )
+                        
             $ContextBlock = @{
                 Type     = 'context'
                 Elements = $ContextElements
             }
 
             $Unfurls.$Link = @{
-                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Url, $Object.name ) | New-SlackMessageBlock @ContextBlock
             }
         }
         catch {

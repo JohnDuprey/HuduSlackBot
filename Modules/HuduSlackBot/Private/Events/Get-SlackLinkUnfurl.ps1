@@ -3,6 +3,14 @@ function Get-SlackLinkUnfurl {
         $SlackEvent
     )
 
+    # Get Hudu info
+    try {
+        Initialize-HuduApi
+    }
+    catch {
+        Write-Host 'ERROR loading Hudu API'
+    }
+
     $Links = $Event.event.links.url
     $BaseUrl = Get-HuduBaseURL
 

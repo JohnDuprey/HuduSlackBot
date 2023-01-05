@@ -52,6 +52,7 @@ function Get-SlackLinkUnfurl {
                 @{
                     type = 'mrkdwn'
                     text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
+                    
                 }
             )
             $ContextBlock = @{
@@ -60,7 +61,7 @@ function Get-SlackLinkUnfurl {
             }
 
             $Unfurls.$Link = @{
-                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Url, $Object.name ) | New-SlackMessageBlock @ContextBlock
             }
         }
         catch {

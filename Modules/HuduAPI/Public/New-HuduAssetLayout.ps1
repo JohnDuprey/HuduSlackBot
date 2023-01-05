@@ -22,8 +22,6 @@ function New-HuduAssetLayout {
 		[bool]$IncludeFiles = '',
 		[Alias('password_types')]
 		[String]$PasswordTypes = '',
-		[Alias('sidebar_folder_id')]
-		[int]$SidebarFolderId = 0,
 		[Parameter(Mandatory = $true)]
 		[system.collections.generic.list[hashtable]]$Fields,
 		[bool]$Active = $true
@@ -45,6 +43,7 @@ function New-HuduAssetLayout {
 	$AssetLayout.asset_layout.add('active', $Active)
 		
 	if ($IncludePasswords) {
+		
 		$AssetLayout.asset_layout.add('include_passwords', [System.Convert]::ToBoolean($IncludePasswords))
 	}
 	
@@ -63,12 +62,10 @@ function New-HuduAssetLayout {
 	if ($PasswordTypes) {
 		$AssetLayout.asset_layout.add('password_types', $PasswordTypes)
 	}
-
-	if ($SidebarFolderId -gt 0) {
-		$AssetLayout.asset_layout.add('sidebar_folder_id', $SidebarFolderId)
-	}
+	
 	
 	$JSON = $AssetLayout | ConvertTo-Json -Depth 10
+	
 	Write-Verbose $JSON
 	
 	$Response = Invoke-HuduRequest -Method post -Resource '/api/v1/asset_layouts' -Body $JSON

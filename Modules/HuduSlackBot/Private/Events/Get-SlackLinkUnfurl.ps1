@@ -4,29 +4,57 @@ function Get-SlackLinkUnfurl {
     )
 
     $Links = $Event.event.links.url
-    
-    return $false
-
-
+    $BaseUrl = Get-HuduBaseURL
     $Unfurls = foreach ($Link in $Links) {
-        $Resource = Get-HuduResourceByUrl -Url $Link
-        switch ($Resource.object_type) {
-            'Article' { $Company = (Get-HuduCompanies -Id $Resource.company_id).name }
-            'Asset' { $Company = $Resource.company_name }
-            'Company' { $Company = $Resource.name }
-            'Website' { $Company = $Resource.company_name}
-        }
-    }
-    if ($Company.name) {
-        $Company = '`n`n*Company*`n<{0}|{1}>' -f $Log.record_company_url, $Log.company_name
-    }
-    else {
-        if ($Log.record_type -eq 'Asset') {
-            $Company = "`n`n*Global KB*"
-        }
-    }
+        try { 
+            $Object = Get-HuduObjectByUrl -Url $Link
+            switch ($Object.object_type) {
+                'Article' { 
+                    if ($Object.company_id) {
+                        $Company = (Get-HuduCompanies -Id $Object.company_id).name 
+                    }
+                    else {
+                        $Company = 'Global KB'
+                    }
+                }
+                'Company' { 
+                    $Company = $Object.name 
+                }
+                default { 
+                    $Company = $Object.company_name
+                }
+            }
+            if ($Object.url -notmatch $BaseUrl) {
+                $Url = '{0}{1}' -f $BaseUrl, $Object.url
+            }
+            else {
+                $Url = $object.url
+            }
 
-    $Blocks = New-SlackMessageBlock -Type section -Text ( "{0} {1}: <{2}|{3}> {4}" -f $Subscription.RecordType, $Action, $Log.record_url, $log.record_name, $Company)
+            $Timestamp = Get-Date $Object.updated_at -UFormat '%s'
+            $DateTime = Get-Date $Object.updated_at -UFormat '%F'
+
+            $ContextElements = @(
+                @{
+                    type = 'mrkdwn'
+                    text = $Company
+                }
+                @{
+                    type = 'mrkdwn'
+                    text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
+                }
+            )
+            $ContextBlock = @{
+                Type     = 'context'
+                Elements = $ContextElements
+            }
+
+            New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+        }
+        catch {
+            Write-Host "Exception creating unfurl: $($_.Exception.Message)"
+        }
+    }
 
     $Body = [PSCustomObject]@{
         source    = $Event.event.source

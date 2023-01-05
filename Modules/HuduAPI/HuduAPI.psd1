@@ -12,7 +12,7 @@
 	RootModule        = '.\HuduAPI.psm1'
 
 	# Version number of this module.
-	ModuleVersion     = '2.2.0'
+	ModuleVersion     = '2.3.0'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = @()
@@ -88,6 +88,7 @@
 	'Get-HuduMagicDashes',
 	'Get-HuduPasswords',
 	'Get-HuduProcesses',
+	'Get-HuduObjectByUrl',
 	'Get-HuduRelations',
 	'Get-HuduSubFolders',
 	'Get-HuduWebsites',

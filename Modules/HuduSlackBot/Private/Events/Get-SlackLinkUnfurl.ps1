@@ -5,7 +5,9 @@ function Get-SlackLinkUnfurl {
 
     $Links = $Event.event.links.url
     $BaseUrl = Get-HuduBaseURL
-    $Unfurls = foreach ($Link in $Links) {
+
+    $Unfurls = @{}
+    foreach ($Link in $Links) {
         try { 
             $Object = Get-HuduObjectByUrl -Url $Link
             switch ($Object.object_type) {
@@ -49,7 +51,7 @@ function Get-SlackLinkUnfurl {
                 Elements = $ContextElements
             }
 
-            New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+            $Unfuls.$Link = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
         }
         catch {
             Write-Host "Exception creating unfurl: $($_.Exception.Message)"
@@ -61,6 +63,8 @@ function Get-SlackLinkUnfurl {
         unfurl_id = $Event.event.unfurl_id
         unfurls   = $Unfurls
     } | ConvertTo-Json -Depth 10 -Compress
+
+    Write-Host $Body
 
     Send-SlackApi -Method 'chat.unfurl' -Body $Body -AsJson
 }

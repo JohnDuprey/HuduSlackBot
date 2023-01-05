@@ -51,7 +51,9 @@ function Get-SlackLinkUnfurl {
                 Elements = $ContextElements
             }
 
-            $Unfuls.$Link = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+            $Unfurls.$Link = @{
+                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Object.name, $Url ) | New-SlackMessageBlock @ContextBlock
+            }
         }
         catch {
             Write-Host "Exception creating unfurl: $($_.Exception.Message)"

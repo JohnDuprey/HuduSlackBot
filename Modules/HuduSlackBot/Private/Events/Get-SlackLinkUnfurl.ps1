@@ -11,7 +11,7 @@ function Get-SlackLinkUnfurl {
         Write-Host 'ERROR loading Hudu API'
     }
 
-    $Links = $Event.event.links.url
+    $Links = $SlackEvent.event.links.url
     $BaseUrl = Get-HuduBaseURL
 
     $Unfurls = @{}
@@ -69,8 +69,8 @@ function Get-SlackLinkUnfurl {
     }
 
     $Body = [PSCustomObject]@{
-        source    = $Event.event.source
-        unfurl_id = $Event.event.unfurl_id
+        source    = $SlackEvent.event.source
+        unfurl_id = $SlackEvent.event.unfurl_id
         unfurls   = $Unfurls
     } | ConvertTo-Json -Depth 10 -Compress
 

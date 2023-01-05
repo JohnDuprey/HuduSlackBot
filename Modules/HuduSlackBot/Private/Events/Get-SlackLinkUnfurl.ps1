@@ -59,20 +59,14 @@ function Get-SlackLinkUnfurl {
                     ) | Out-Null
                 }
             }
-            if ($Object.url -notmatch $BaseUrl) {
-                $Url = '{0}{1}' -f $BaseUrl, $Object.url
-            }
-            else {
-                $Url = $object.url
-            }
-                        
+       
             $ContextBlock = @{
                 Type     = 'context'
                 Elements = $ContextElements
             }
 
             $Unfurls.$Link = @{
-                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | <{1}|{2}>' -f $Object.object_type, $Url, $Object.name ) | New-SlackMessageBlock @ContextBlock
+                blocks = New-SlackMessageBlock -Type section -Text ( '{0} | *{1}*' -f $Object.object_type, $Object.name ) | New-SlackMessageBlock @ContextBlock
             }
         }
         catch {

@@ -51,9 +51,9 @@ function Invoke-ProcessHuduSubscription {
                                         SmartHrefHandling = $true
                                     }
                                     $Markdown = ConvertFrom-HTMLToMarkdown @MarkdownOptions | ConvertTo-SlackLinkMarkdown
-                                    $Markdown = $Markdown.substring(0, [System.Math]::Min(3000, $Markdown.Length))
-
-                                    $RichTextFields.Add(("*{0}*`n{1}" -f $Field.label, $Markdown)) | Out-Null
+                                    $RichText = "*{0}*`n{1}" -f $Field.label, $Markdown
+                                    $RichText.substring(0, [System.Math]::Min(3000, $RichText.Length))
+                                    $RichTextFields.Add($RichText) | Out-Null
                                     continue
                                 }
 

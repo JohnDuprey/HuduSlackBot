@@ -4,7 +4,7 @@ This is an Azure function app created to bridge the gap between [Slack](https://
 
 ## Features
 - Activity log subscriptions
-- Link unfurling (pending API change)
+- Link unfurling
 
 ## Requirements
 - Custom Slack app deployed to your team

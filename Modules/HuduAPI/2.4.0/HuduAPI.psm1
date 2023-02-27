@@ -153,23 +153,19 @@ function Invoke-HuduRequest {
 
     try {
         $Results = Invoke-RestMethod @RestMethod
-    }
-
-    catch {
+    } catch {
         if ("$_".trim() -eq 'Retry later' -or "$_".trim() -eq 'The remote server returned an error: (429) Too Many Requests.') {
             Write-Information 'Hudu API Rate limited. Waiting 30 Seconds then trying again'
             Start-Sleep 30
             $Results = Invoke-HuduRequest @RestMethod
-        }
-
-        else {
+        } else {
             Write-Error "'$_'"
         }
     }
 
     $Results
 }
-#EndRegion './Private/Invoke-HuduRequest.ps1' 110
+#EndRegion './Private/Invoke-HuduRequest.ps1' 106
 #Region './Private/Invoke-HuduRequestPaginated.ps1' 0
 function Invoke-HuduRequestPaginated {
     <#
@@ -327,13 +323,11 @@ function Get-HuduApiKey {
     Param()
     if ($null -eq $Int_HuduAPIKey) {
         Write-Error 'No API key has been set. Please use New-HuduAPIKey to set it.'
-    }
-
-    else {
+    } else {
         $Int_HuduAPIKey
     }
 }
-#EndRegion './Public/Get-HuduApiKey.ps1' 23
+#EndRegion './Public/Get-HuduApiKey.ps1' 21
 #Region './Public/Get-HuduAppInfo.ps1' 0
 function Get-HuduAppInfo {
     <#
@@ -350,11 +344,11 @@ function Get-HuduAppInfo {
     [CmdletBinding()]
     Param()
 
+    [version]$script:HuduRequiredVersion = '2.21'
+    
     try {
         Invoke-HuduRequest -Resource '/api/v1/api_info'
-    }
-
-    catch {
+    } catch {
         [PSCustomObject]@{
             version = '0.0.0.0'
             date    = '2000-01-01'
@@ -398,9 +392,7 @@ function Get-HuduArticles {
 
     if ($Id) {
         Invoke-HuduRequest -Method get -Resource "/api/v1/articles/$Id"
-    }
-
-    else {
+    } else {
         $Params = @{}
 
         if ($CompanyId) { $Params.company_id = $CompanyId }
@@ -413,10 +405,10 @@ function Get-HuduArticles {
             Params   = $Params
         }
 
-        Invoke-HuduRequestPaginated -HuduRequest $HuduRequest
+        Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property articles
     }
 }
-#EndRegion './Public/Get-HuduArticles.ps1' 54
+#EndRegion './Public/Get-HuduArticles.ps1' 52
 #Region './Public/Get-HuduAssetLayoutFieldID.ps1' 0
 function Get-HuduAssetLayoutFieldID {
     <#
@@ -491,9 +483,7 @@ function Get-HuduAssetLayouts {
         $HuduRequest.Resource = '{0}/{1}' -f $HuduRequest.Resource, $LayoutId
         $AssetLayout = Invoke-HuduRequest @HuduRequest
         return $AssetLayout.asset_layout
-    }
-
-    else {
+    } else {
         $Params = @{}
         if ($Name) { $Params.name = $Name }
         if ($Slug) { $Params.slug = $Slug }
@@ -507,7 +497,7 @@ function Get-HuduAssetLayouts {
         $AssetLayouts
     }
 }
-#EndRegion './Public/Get-HuduAssetLayouts.ps1' 55
+#EndRegion './Public/Get-HuduAssetLayouts.ps1' 53
 #Region './Public/Get-HuduAssets.ps1' 0
 function Get-HuduAssets {
     <#
@@ -571,9 +561,7 @@ function Get-HuduAssets {
             Method   = 'GET'
         }
         Invoke-HuduRequest @HuduRequest
-    }
-
-    else {
+    } else {
         $Params = @{}
         if ($CompanyId) { $Params.company_id = $CompanyId }
         if ($AssetLayoutId) { $Params.asset_layout_id = $AssetLayoutId }
@@ -591,7 +579,7 @@ function Get-HuduAssets {
         Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property assets
     }
 }
-#EndRegion './Public/Get-HuduAssets.ps1' 83
+#EndRegion './Public/Get-HuduAssets.ps1' 81
 #Region './Public/Get-HuduBaseURL.ps1' 0
 function Get-HuduBaseURL {
     <#
@@ -609,13 +597,11 @@ function Get-HuduBaseURL {
     Param()
     if ($null -eq $Int_HuduBaseURL) {
         Write-Error 'No Base URL has been set. Please use New-HuduBaseURL to set it.'
-    }
-
-    else {
+    } else {
         $Int_HuduBaseURL
     }
 }
-#EndRegion './Public/Get-HuduBaseURL.ps1' 23
+#EndRegion './Public/Get-HuduBaseURL.ps1' 21
 #Region './Public/Get-HuduCard.ps1' 0
 function Get-HuduCard {
     <#
@@ -729,9 +715,7 @@ function Get-HuduCompanies {
     if ($Id) {
         $Company = Invoke-HuduRequest -Method get -Resource "/api/v1/companies/$Id"
         return $Company
-    }
-
-    else {
+    } else {
         $Params = @{}
         if ($Name) { $Params.name = $Name }
         if ($PhoneNumber) { $Params.phone_number = $PhoneNumber }
@@ -751,7 +735,7 @@ function Get-HuduCompanies {
         Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property 'companies'
     }
 }
-#EndRegion './Public/Get-HuduCompanies.ps1' 80
+#EndRegion './Public/Get-HuduCompanies.ps1' 78
 #Region './Public/Get-HuduExpirations.ps1' 0
 function Get-HuduExpirations {
     <#
@@ -820,10 +804,7 @@ function Get-HuduFolderMap {
     if ($CompanyId) {
         $FoldersRaw = Get-HuduFolders -company_id $CompanyId
         $SubFolders = Get-HuduCompanyFolders -FoldersRaw $FoldersRaw
-
-    }
-
-    else {
+    } else {
         $FoldersRaw = Get-HuduFolders
         $FoldersProcessed = $FoldersRaw | Where-Object { $null -eq $_.company_id }
         $SubFolders = Get-HuduCompanyFolders -FoldersRaw $FoldersProcessed
@@ -831,7 +812,7 @@ function Get-HuduFolderMap {
 
     return $SubFolders
 }
-#EndRegion './Public/Get-HuduFolderMap.ps1' 22
+#EndRegion './Public/Get-HuduFolderMap.ps1' 19
 #Region './Public/Get-HuduFolders.ps1' 0
 function Get-HuduFolders {
     <#
@@ -865,9 +846,7 @@ function Get-HuduFolders {
     if ($id) {
         $Folder = Invoke-HuduRequest -Method get -Resource "/api/v1/folders/$id"
         return $Folder.Folder
-    }
-
-    else {
+    } else {
         $Params = @{}
 
         if ($CompanyId) { $Params.company_id = $CompanyId }
@@ -881,7 +860,7 @@ function Get-HuduFolders {
         Invoke-HuduPaginatedRequest -HuduRequest $HuduRequest -Property folders
     }
 }
-#EndRegion './Public/Get-HuduFolders.ps1' 49
+#EndRegion './Public/Get-HuduFolders.ps1' 47
 #Region './Public/Get-HuduIntegrationMatchers.ps1' 0
 function Get-HuduIntegrationMatchers {
     <#
@@ -929,7 +908,6 @@ function Get-HuduIntegrationMatchers {
     }
 
     if ($Matched.IsPresent) { $Params.matched = 'true' }
-
     if ($CompanyId) { $Params.company_id = $CompanyId }
     if ($Identifier) { $Params.identifier = $Identifier }
     if ($SyncId) { $Params.sync_id = $SyncId }
@@ -941,7 +919,7 @@ function Get-HuduIntegrationMatchers {
     }
     Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property 'matchers'
 }
-#EndRegion './Public/Get-HuduIntegrationMatchers.ps1' 59
+#EndRegion './Public/Get-HuduIntegrationMatchers.ps1' 58
 #Region './Public/Get-HuduMagicDashes.ps1' 0
 function Get-HuduMagicDashes {
     <#
@@ -1046,13 +1024,11 @@ function Get-HuduObjectByUrl {
                 Write-Error "Unsupported object type $Type"
             }
         }
-    }
-
-    else {
+    } else {
         Write-Error 'Provided URL does not match Hudu Base URL'
     }
 }
-#EndRegion './Public/Get-HuduObjectByUrl.ps1' 72
+#EndRegion './Public/Get-HuduObjectByUrl.ps1' 70
 #Region './Public/Get-HuduPasswords.ps1' 0
 function Get-HuduPasswords {
     <#
@@ -1098,9 +1074,7 @@ function Get-HuduPasswords {
     if ($Id) {
         $Password = Invoke-HuduRequest -Method get -Resource "/api/v1/asset_passwords/$id"
         return $Password
-    }
-
-    else {
+    } else {
         $Params = @{}
         if ($CompanyId) { $Params.company_id = $CompanyId }
         if ($Name) { $Params.name = $Name }
@@ -1115,7 +1089,7 @@ function Get-HuduPasswords {
     }
     Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property 'asset_passwords'
 }
-#EndRegion './Public/Get-HuduPasswords.ps1' 62
+#EndRegion './Public/Get-HuduPasswords.ps1' 60
 #Region './Public/Get-HuduProcesses.ps1' 0
 function Get-HuduProcesses {
     <#
@@ -1152,9 +1126,7 @@ function Get-HuduProcesses {
 
     if ($Id) {
         Invoke-HuduRequest -Method get -Resource "/api/v1/procedures/$id"
-    }
-
-    else {
+    } else {
         $Params = @{}
 
         if ($CompanyId) { $Params.company_id = $CompanyId }
@@ -1170,7 +1142,7 @@ function Get-HuduProcesses {
         Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property 'procedures'
     }
 }
-#EndRegion './Public/Get-HuduProcesses.ps1' 54
+#EndRegion './Public/Get-HuduProcesses.ps1' 52
 #Region './Public/Get-HuduPublicPhotos.ps1' 0
 function Get-HuduPublicPhotos {
     <#
@@ -1256,9 +1228,7 @@ function Get-HuduWebsites {
 
     if ($WebsiteId) {
         Invoke-HuduRequest -Method get -Resource "/api/v1/websites/$($WebsiteId)"
-    }
-
-    else {
+    } else {
         $Params = @{}
         if ($Name) { $Params.name = $Name }
         if ($Slug) { $Params.slug = $Slug }
@@ -1272,7 +1242,7 @@ function Get-HuduWebsites {
         Invoke-HuduRequestPaginated -HuduRequest $HuduRequest
     }
 }
-#EndRegion './Public/Get-HuduWebsites.ps1' 52
+#EndRegion './Public/Get-HuduWebsites.ps1' 50
 #Region './Public/Initialize-HuduFolder.ps1' 0
 function Initialize-HuduFolder {
     [CmdletBinding()]
@@ -1284,9 +1254,7 @@ function Initialize-HuduFolder {
 
     if ($CompanyId) {
         $FolderMap = Get-HuduFolderMap -company_id $CompanyId
-    }
-
-    else {
+    } else {
         $FolderMap = Get-HuduFolderMap
     }
 
@@ -1294,16 +1262,14 @@ function Initialize-HuduFolder {
     foreach ($Folder in $FolderPath) {
         if ($CurrentFolder.$(Get-HuduFolderCleanName $Folder)) {
             $CurrentFolder = $CurrentFolder.$(Get-HuduFolderCleanName $Folder)
-        }
-
-        else {
+        } else {
             $CurrentFolder = (New-HuduFolder -Name $Folder -company_id $CompanyID -parent_folder_id $CurrentFolder.id).folder
         }
     }
 
-    Return $CurrentFolder
+    return $CurrentFolder
 }
-#EndRegion './Public/Initialize-HuduFolder.ps1' 30
+#EndRegion './Public/Initialize-HuduFolder.ps1' 26
 #Region './Public/New-HuduAPIKey.ps1' 0
 function New-HuduAPIKey {
     <#
@@ -1331,9 +1297,7 @@ function New-HuduAPIKey {
     process {
         if ($ApiKey) {
             $SecApiKey = ConvertTo-SecureString $ApiKey -AsPlainText -Force
-        }
-
-        else {
+        } else {
             $SecApiKey = Read-Host -Prompt 'Please enter your Hudu API key, you can obtain it from https://your-hudu-domain/admin/api_keys:' -AsSecureString
         }
         Set-Variable -Name 'Int_HuduAPIKey' -Value $SecApiKey -Visibility Private -Scope script -Force
@@ -1346,7 +1310,7 @@ function New-HuduAPIKey {
         }
     }
 }
-#EndRegion './Public/New-HuduAPIKey.ps1' 42
+#EndRegion './Public/New-HuduAPIKey.ps1' 40
 #Region './Public/New-HuduArticle.ps1' 0
 function New-HuduArticle {
     <#
@@ -2417,9 +2381,7 @@ function Remove-HuduMagicDash {
             if ($PSCmdlet.ShouldProcess($Id)) {
                 $null = Invoke-HuduRequest -Method delete -Resource "/api/v1/magic_dash/$Id"
             }
-        }
-
-        else {
+        } else {
             $MagicDash = @{}
 
             $MagicDash.add('title', $Title)
@@ -2433,7 +2395,7 @@ function Remove-HuduMagicDash {
         }
     }
 }
-#EndRegion './Public/Remove-HuduMagicDash.ps1' 59
+#EndRegion './Public/Remove-HuduMagicDash.ps1' 57
 #Region './Public/Remove-HuduPassword.ps1' 0
 function Remove-HuduPassword {
     <#
@@ -2634,9 +2596,7 @@ function Set-HuduArticleArchive {
 
     if ($Archive) {
         $Action = 'archive'
-    }
-
-    else {
+    } else {
         $Action = 'unarchive'
     }
 
@@ -2644,7 +2604,7 @@ function Set-HuduArticleArchive {
         Invoke-HuduRequest -Method put -Resource "/api/v1/articles/$Id/$Action"
     }
 }
-#EndRegion './Public/Set-HuduArticleArchive.ps1' 39
+#EndRegion './Public/Set-HuduArticleArchive.ps1' 37
 #Region './Public/Set-HuduAsset.ps1' 0
 function Set-HuduAsset {
     <#
@@ -2795,9 +2755,7 @@ function Set-HuduAssetArchive {
 
     if ($Archive) {
         $Action = 'archive'
-    }
-
-    else {
+    } else {
         $Action = 'unarchive'
     }
 
@@ -2805,7 +2763,7 @@ function Set-HuduAssetArchive {
         Invoke-HuduRequest -Method put -Resource "/api/v1/companies/$CompanyId/assets/$Id/$Action"
     }
 }
-#EndRegion './Public/Set-HuduAssetArchive.ps1' 45
+#EndRegion './Public/Set-HuduAssetArchive.ps1' 43
 #Region './Public/Set-HuduAssetLayout.ps1' 0
 function Set-HuduAssetLayout {
     <#
@@ -3113,16 +3071,14 @@ function Set-HuduCompanyArchive {
 
     if ($Archive -eq $true) {
         $Action = 'archive'
-    }
-
-    else {
+    } else {
         $Action = 'unarchive'
     }
     if ($PSCmdlet.ShouldProcess($Id)) {
         Invoke-HuduRequest -Method put -Resource "/api/v1/companies/$Id/$Action"
     }
 }
-#EndRegion './Public/Set-HuduCompanyArchive.ps1' 38
+#EndRegion './Public/Set-HuduCompanyArchive.ps1' 36
 #Region './Public/Set-HuduFolder.ps1' 0
 function Set-HuduFolder {
     <#
@@ -3260,9 +3216,7 @@ function Set-HuduIntegrationMatcher {
 
         if ($AcceptSuggestedMatch) {
             $Matcher.matcher.add('company_id', $PotentialCompanyId) | Out-Null
-        }
-
-        else {
+        } else {
             $Matcher.matcher.add('company_id', $CompanyId) | Out-Null
         }
 
@@ -3283,7 +3237,7 @@ function Set-HuduIntegrationMatcher {
         }
     }
 }
-#EndRegion './Public/Set-HuduIntegrationMatcher.ps1' 83
+#EndRegion './Public/Set-HuduIntegrationMatcher.ps1' 81
 #Region './Public/Set-HuduMagicDash.ps1' 0
 function Set-HuduMagicDash {
     <#
@@ -3576,9 +3530,7 @@ function Set-HuduPasswordArchive {
     process {
         if ($Archive) {
             $Action = 'archive'
-        }
-
-        else {
+        } else {
             $Action = 'unarchive'
         }
 
@@ -3587,7 +3539,7 @@ function Set-HuduPasswordArchive {
         }
     }
 }
-#EndRegion './Public/Set-HuduPasswordArchive.ps1' 41
+#EndRegion './Public/Set-HuduPasswordArchive.ps1' 39
 #Region './Public/Set-HuduWebsite.ps1' 0
 function Set-HuduWebsite {
     <#

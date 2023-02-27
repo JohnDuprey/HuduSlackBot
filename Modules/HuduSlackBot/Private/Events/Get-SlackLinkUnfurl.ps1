@@ -6,9 +6,8 @@ function Get-SlackLinkUnfurl {
     # Get Hudu info
     try {
         Initialize-HuduApi
-    }
-    catch {
-        Write-Host 'ERROR loading Hudu API'
+    } catch {
+        Write-Error 'ERROR loading Hudu API'
     }
 
     $Links = $SlackEvent.event.links.url
@@ -16,7 +15,7 @@ function Get-SlackLinkUnfurl {
 
     $Unfurls = @{}
     foreach ($Link in $Links) {
-        try { 
+        try {
             $Object = Get-HuduObjectByUrl -Url $Link
 
             $Timestamp = Get-Date $Object.updated_at -UFormat '%s'
@@ -26,16 +25,14 @@ function Get-SlackLinkUnfurl {
                 @{
                     type = 'mrkdwn'
                     text = "Last Update: <!date^$($Timestamp)^{date_pretty}|$DateTime>"
-                    
                 }
             )
 
             switch ($Object.object_type) {
-                'Article' { 
+                'Article' {
                     if ($Object.company_id) {
-                        $Company = (Get-HuduCompanies -Id $Object.company_id).name 
-                    }
-                    else {
+                        $Company = (Get-HuduCompanies -Id $Object.company_id).name
+                    } else {
                         $Company = 'Global KB'
                     }
 
@@ -46,10 +43,10 @@ function Get-SlackLinkUnfurl {
                         }
                     ) | Out-Null
                 }
-                'Company' { 
-                    $Company = $Object.name 
+                'Company' {
+                    $Company = $Object.name
                 }
-                default { 
+                default {
                     $Company = $Object.company_name
                     $ContextElements.Add(
                         @{
@@ -59,7 +56,7 @@ function Get-SlackLinkUnfurl {
                     ) | Out-Null
                 }
             }
-       
+
             $ContextBlock = @{
                 Type     = 'context'
                 Elements = $ContextElements
@@ -68,19 +65,18 @@ function Get-SlackLinkUnfurl {
             $Unfurls.$Link = @{
                 blocks = New-SlackMessageBlock -Type section -Text ( '{0} | *{1}*' -f $Object.object_type, $Object.name ) | New-SlackMessageBlock @ContextBlock
             }
-        }
-        catch {
-            Write-Host "Exception creating unfurl: $($_.Exception.Message)"
+        } catch {
+            Write-Error "Exception creating unfurl: $($_.Exception.Message)"
         }
     }
 
-    $Body = [PSCustomObject]@{
-        source    = $SlackEvent.event.source
-        unfurl_id = $SlackEvent.event.unfurl_id
-        unfurls   = $Unfurls
-    } | ConvertTo-Json -Depth 10 -Compress
+    if ($Unfurls) {
+        $Body = [PSCustomObject]@{
+            source    = $SlackEvent.event.source
+            unfurl_id = $SlackEvent.event.unfurl_id
+            unfurls   = $Unfurls
+        } | ConvertTo-Json -Depth 10 -Compress
 
-    Write-Host $Body
-
-    Send-SlackApi -Method 'chat.unfurl' -Body $Body -AsJson
+        Send-SlackApi -Method 'chat.unfurl' -Body $Body -AsJson
+    }
 }

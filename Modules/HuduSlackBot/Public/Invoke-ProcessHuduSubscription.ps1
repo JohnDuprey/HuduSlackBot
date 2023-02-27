@@ -65,13 +65,11 @@ function Invoke-ProcessHuduSubscription {
                                     $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
                                     if ($FieldTag.id) {
                                         $Value = '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
-                                    }
-                                    else {
+                                    } else {
                                         $Value = $Field.value
                                     }
                                 }
-                            }
-                            catch { $Value = $Field.value }
+                            } catch { $Value = $Field.value }
 
                             "*{0}*`n{1}" -f $Field.Label, $Value
                         }
@@ -84,12 +82,10 @@ function Invoke-ProcessHuduSubscription {
                         }
                     }
                     #$Blocks | ConvertTo-Json
-                }
-                else {
+                } else {
                     if ($Log.company_name) {
                         $Company = '<{0}|{1}>' -f $Log.record_company_url, $Log.company_name
-                    }
-                    else {
+                    } else {
                         if ($Log.record_type -eq 'Article') {
                             $Company = 'Global KB'
                         }
@@ -116,14 +112,12 @@ function Invoke-ProcessHuduSubscription {
                     $LogStatus = Send-SlackMessage @LogMessage
                     if ($LogStatus.ok) {
                         $LastActivityId = $Log.id
-                    }
-                    else {
+                    } else {
                         $ErrorsDetected = $true
                         break
                     }
-                }
-                catch {
-                    Write-Host "Exception sending activity log: $($_.Exception.Message)"
+                } catch {
+                    Write-Error "Exception sending activity log: $($_.Exception.Message)"
                 }
             }
 
@@ -137,8 +131,7 @@ function Invoke-ProcessHuduSubscription {
                     TableRow     = $Subscription
                 }
                 Set-SlackBotData @SubscriptionUpdate
-            }
-            else {
+            } else {
                 $ErrorConvo = @{
                     Method = 'conversations.open'
                     Body   = @{
@@ -155,13 +148,11 @@ function Invoke-ProcessHuduSubscription {
                     Send-SlackMessage @ErrorMessage | Out-Null
                 }
             }
-        }
-        else {
+        } else {
             Write-Output 'No events to process'
         }
 
-    }
-    catch {
+    } catch {
         Write-Output "Exception processing subscriptions: $($_.Exception.Message)"
     }
 }

@@ -1,21 +1,25 @@
 function Update-SlackAppHome {
+    [CmdletBinding(SupportsShouldProcess)]
     Param(
-        $UserId
+        $UserId,
+        $Admin
     )
 
     #$SlackEvent | ConvertTo-Json -Depth 10
-    $Blocks = Get-SlackAppHome
+    $Blocks = Get-SlackAppHome -Admin $Admin
 
     $View = [PSCustomObject]@{
         type   = 'home'
         blocks = $Blocks
     } | ConvertTo-Json -Depth 10 -Compress
 
-    Write-Host $View
+    Write-Information $View
     $Body = @{
         user_id = $UserId
         view    = $View
     }
 
-    Send-SlackApi -Method 'views.publish' -Body $Body
+    if ($PSCmdlet.ShouldProcess($UserId)) {
+        Send-SlackApi -Method 'views.publish' -Body $Body
+    }
 }

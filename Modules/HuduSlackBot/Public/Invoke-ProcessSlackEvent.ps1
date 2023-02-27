@@ -12,12 +12,12 @@ function Invoke-ProcessSlackEvent {
 
     $Existing = Get-SlackBotData @EventQuery
     if ($Existing.RowKey -eq $Request.Body.event_id) {
-        Write-Host 'Request already exists'
+        Write-Information 'Request already exists'
         return $false
     }
 
     Set-PSSlackConfig -Token $env:SlackBotToken -NoSave
-    
+
     # Process event
     $SlackEvent = $Request.Body
     switch ($SlackEvent.event.type) {
@@ -26,12 +26,16 @@ function Invoke-ProcessSlackEvent {
         }
         'app_home_opened' {
             if ($SlackEvent.event.tab -eq 'home') {
-                $UpdateAppHome = Update-SlackAppHome -UserID $SlackEvent.event.user
-                if ($UpdateAppHome.ok) {
-                    Write-Host "Updated app home for $($SlackEvent.event.user)"
+                $User = Get-SlackUserInfo -UserID $SlackEvent.event.user
+                $Admin = $false
+                if ($User.IsAdmin -or $User.IsOwner -or $User.IsPrimaryOwner) {
+                    $Admin = $true
                 }
-                else {
-                    Write-Host "ERROR: Unable to update app home for $($SlackEvent.event.user)"
+                $UpdateAppHome = Update-SlackAppHome -UserID $SlackEvent.event.user -Admin $Admin
+                if ($UpdateAppHome.ok) {
+                    Write-Information "Updated app home for $($SlackEvent.event.user)"
+                } else {
+                    Write-Information "ERROR: Unable to update app home for $($SlackEvent.event.user)"
                 }
             }
         }
@@ -42,7 +46,7 @@ function Invoke-ProcessSlackEvent {
         EventType = $Request.Body.event.type
     }
     if ($env:SlackLogPayloads) { $TableRow.Payload = $Request.RawBody }
-    
-    $EventQuery.TableRow = $TableRow 
+
+    $EventQuery.TableRow = $TableRow
     Set-SlackBotData @EventQuery
 }

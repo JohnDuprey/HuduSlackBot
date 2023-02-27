@@ -31,7 +31,7 @@ function Get-SlackLinkUnfurl {
             switch ($Object.object_type) {
                 'Article' {
                     if ($Object.company_id) {
-                        $Company = (Get-HuduCompanies -Id $Object.company_id).name
+                        $Company = (Get-HuduCompanies -Id $Object.company_id).company.name
                     } else {
                         $Company = 'Global KB'
                     }

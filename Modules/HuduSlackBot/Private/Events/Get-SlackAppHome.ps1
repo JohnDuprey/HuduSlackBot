@@ -1,4 +1,5 @@
 function Get-SlackAppHome {
+    Param($Admin)
 
     # Get subscription list
     $SubQuery = @{
@@ -122,10 +123,14 @@ function Get-SlackAppHome {
                     Options  = @{ $Subscription.RowKey = 'Delete' }
                 }
                 $SubOverflow = New-SlackMessageBlockElement @OverflowBlockElement
+
                 $SubFieldBlock = @{
-                    Type      = 'section'
-                    Fields    = $SubFields
-                    Accessory = $SubOverflow
+                    Type   = 'section'
+                    Fields = $SubFields
+                }
+
+                if ($Admin) {
+                    $SubFieldBlock.Accessory = $SubOverflow
                 }
 
                 # Subscription context

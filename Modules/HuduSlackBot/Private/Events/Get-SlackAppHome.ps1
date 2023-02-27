@@ -11,13 +11,11 @@ function Get-SlackAppHome {
         $ApiInit = Initialize-HuduApi
         if ($ApiInit) {
             $Info = Get-HuduAppInfo -ErrorAction SilentlyContinue
-        }
-        else {
+        } else {
             $Info = $false
         }
-    }
-    catch {
-        Write-Host "ERROR loading Hudu API"
+    } catch {
+        Write-Error 'ERROR loading Hudu API'
     }
 
     $Subscriptions = Get-SlackBotData @SubQuery
@@ -62,8 +60,7 @@ function Get-SlackAppHome {
             Text    = ':warning: We are unable to access the Hudu API, please check your HuduAPIKey setting.'
         }
         $Blocks = $Blocks | New-SlackMessageBlock @WarningBlock
-    }
-    else {
+    } else {
         $HeaderContextElements = @(
             @{
                 type = 'mrkdwn'
@@ -93,12 +90,12 @@ function Get-SlackAppHome {
             Elements = $ActionButtons
         }
         $Blocks = $Blocks | New-SlackMessageBlock @ActionsBlock
-           
+
         if ($Subscriptions) {
             $ActivityLogHeader = @{
                 BlockId   = 'SubscriptionBlockId'
                 Type      = 'header'
-                PlainText = 'Activity Log Subscriptions' 
+                PlainText = 'Activity Log Subscriptions'
             }
             $Blocks = $Blocks | New-SlackMessageBlock -Type divider | New-SlackMessageBlock @ActivityLogHeader
 
@@ -113,7 +110,7 @@ function Get-SlackAppHome {
                         ("*Action:*`n {0}" -f $Subscription.Actions)
                         ("*Channel:*`n <#{0}>" -f $Subscription.ChannelID)
                 )
-               
+
                 if ($Subscription.RecordType -eq 'Asset') {
                     $SubFields.Add("*Asset Layout:*`n {0}" -f $Subscription.AssetLayoutName) | Out-Null
                 }
@@ -124,7 +121,7 @@ function Get-SlackAppHome {
                     ActionId = 'Remove-HuduActivitySubscription'
                     Options  = @{ $Subscription.RowKey = 'Delete' }
                 }
-                $SubOverflow = New-SlackMessageBlockElement @OverflowBlockElement 
+                $SubOverflow = New-SlackMessageBlockElement @OverflowBlockElement
                 $SubFieldBlock = @{
                     Type      = 'section'
                     Fields    = $SubFields

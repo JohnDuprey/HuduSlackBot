@@ -62,12 +62,15 @@ function Invoke-ProcessHuduSubscription {
                                 }
 
                                 else {
-                                    $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
-                                    if ($FieldTag.id) {
-                                        $Value = '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
-                                    } else {
-                                        $Value = $Field.value
+                                    $FieldTags = $Field.value | ConvertFrom-Json -ErrorAction Stop
+                                    $Values = foreach ($FieldTag in $FieldTags) {
+                                        if ($FieldTag.id) {
+                                            '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
+                                        } else {
+                                            $Field.value
+                                        }
                                     }
+                                    $Value = $Values -join ' '
                                 }
                             } catch { $Value = $Field.value }
 

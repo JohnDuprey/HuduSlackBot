@@ -20,7 +20,7 @@ function Invoke-ProcessHuduSubscription {
             #$LogQuery.AssetLayoutId = $Subscription.AssetLayoutId
         }
 
-        $ActivityLogs = Get-HuduActivityLogs @LogQuery | Sort-Object id
+        $ActivityLogs = Get-HuduActivityLogs @LogQuery | Sort-Object -Property record_id, user_id, created_at -Unique
 
         Write-Output "Searching logs for $Actions $($Subscription.RecordType)"
         $Logs = foreach ($Action in $Actions) {
@@ -62,12 +62,15 @@ function Invoke-ProcessHuduSubscription {
                                 }
 
                                 else {
-                                    $FieldTag = $Field.value | ConvertFrom-Json -ErrorAction Stop
-                                    if ($FieldTag.id) {
-                                        $Value = '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
-                                    } else {
-                                        $Value = $Field.value
+                                    $FieldTags = $Field.value | ConvertFrom-Json -ErrorAction Stop
+                                    $Values = foreach ($FieldTag in $FieldTags) {
+                                        if ($FieldTag.id) {
+                                            '<{0}{1}|{2}>' -f $env:HuduBaseDomain, $FieldTag.url, $FieldTag.name
+                                        } else {
+                                            $Field.value
+                                        }
                                     }
+                                    $Value = $Values -join ' '
                                 }
                             } catch { $Value = $Field.value }
 

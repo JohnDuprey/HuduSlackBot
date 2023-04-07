@@ -20,7 +20,7 @@ function Invoke-ProcessHuduSubscription {
             #$LogQuery.AssetLayoutId = $Subscription.AssetLayoutId
         }
 
-        $ActivityLogs = Get-HuduActivityLogs @LogQuery | Sort-Object id
+        $ActivityLogs = Get-HuduActivityLogs @LogQuery | Sort-Object -Property record_id, user_id, created_at -Unique
 
         Write-Output "Searching logs for $Actions $($Subscription.RecordType)"
         $Logs = foreach ($Action in $Actions) {
